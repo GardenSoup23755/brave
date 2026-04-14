@@ -4,13 +4,13 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: {}
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  build-and-publish:
+  build-and-release:
     runs-on: windows-latest
 
     steps:
@@ -25,8 +25,23 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore BraveClipping.sln
 
-      - name: Build app (Release)
+      - name: Build project (Release)
         run: dotnet build BraveClipping/BraveClipping.csproj -c Release --no-restore
 
       - name: Publish self-contained win-x64
         run: dotnet publish BraveClipping/BraveClipping.csproj -c Release -r win-x64 --self-contained true -o publish --no-build
+
+      - name: Verify executable exists
+        shell: pwsh
+        run: |
+          if (!(Test-Path "publish/BraveClipping.exe")) {
+            throw "publish/BraveClipping.exe was not found"
+          }
+
+      - name: Create GitHub release and upload .exe
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Brave Clipping v${{ github.run_number }}
+          generate_release_notes: true
+          files: publish/BraveClipping.exe
