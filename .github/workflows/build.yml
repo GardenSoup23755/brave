@@ -1,0 +1,46 @@
+name: Build and Release Brave Clipping
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore BraveClipping.sln
+
+      - name: Build WPF app (Release)
+        run: dotnet build BraveClipping/BraveClipping.csproj -c Release --no-restore
+
+      - name: Publish self-contained win-x64 executable
+        run: dotnet publish BraveClipping/BraveClipping.csproj -c Release -r win-x64 --self-contained true -o publish --no-build
+
+      - name: Verify executable exists
+        shell: pwsh
+        run: |
+          if (!(Test-Path "publish/BraveClipping.exe")) {
+            throw "publish/BraveClipping.exe was not found"
+          }
+
+      - name: Create GitHub release and upload .exe
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Brave Clipping v${{ github.run_number }}
+          generate_release_notes: true
+          files: publish/BraveClipping.exe
