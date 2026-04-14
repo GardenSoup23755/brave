@@ -31,6 +31,7 @@ Brave Clipping is a lightweight Windows desktop app (WPF + .NET 8) for running t
 
 ```bash
 dotnet publish BraveClipping/BraveClipping.csproj -c Release -r win-x64 --self-contained true
+test
 ```
 
 ## Notes
