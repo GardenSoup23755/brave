@@ -1,0 +1,39 @@
+name: Build and Release Brave Clipping
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore BraveClipping.sln
+
+      - name: Publish (Release win-x64 self-contained)
+        run: dotnet publish BraveClipping/BraveClipping.csproj -c Release -r win-x64 --self-contained true -o publish
+
+      - name: Archive executable
+        shell: pwsh
+        run: |
+          Compress-Archive -Path publish\* -DestinationPath BraveClipping-win-x64.zip
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Brave Clipping v${{ github.run_number }}
+          files: |
+            BraveClipping-win-x64.zip
