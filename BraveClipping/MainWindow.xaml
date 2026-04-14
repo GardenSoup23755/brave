@@ -1,0 +1,133 @@
+<Window x:Class="BraveClipping.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:view="clr-namespace:BraveClipping.Views"
+        mc:Ignorable="d"
+        Title="Brave Clipping"
+        Width="1180"
+        Height="760"
+        Background="#101215">
+    <Window.Resources>
+        <view:BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#1F2329" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="#2E333A" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Margin" Value="4" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="#161A1F" Padding="14">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="4,8,4,20">
+                    <Grid Width="24" Height="24" Margin="0,0,8,0">
+                        <Ellipse Fill="#FF8A00"/>
+                        <Path Fill="#101215" Data="M7,4 L13,4 C17,4 19,7 19,9 C19,11 18,12 16,13 C18,14 19,15 19,17 C19,20 17,22 13,22 L7,22 Z"/>
+                        <Polygon Fill="#FF8A00" Points="11,9 14,10.5 11,12"/>
+                        <Polygon Fill="#FF8A00" Points="11,15 14,16.5 11,18"/>
+                    </Grid>
+                    <TextBlock Text="Brave Clipping" Foreground="#FF8A00" FontSize="24" FontWeight="Bold"/>
+                </StackPanel>
+                <Button Content="Dashboard" Command="{Binding NavigateCommand}" CommandParameter="Dashboard" />
+                <Button Content="Task Manager" Command="{Binding NavigateCommand}" CommandParameter="Task Manager" />
+                <Button Content="Clip Manager" Command="{Binding NavigateCommand}" CommandParameter="Clip Manager" />
+                <Button Content="Output / Logs" Command="{Binding NavigateCommand}" CommandParameter="Output/Logs" />
+                <Button Content="Settings" Command="{Binding NavigateCommand}" CommandParameter="Settings" />
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="20">
+                <StackPanel Visibility="{Binding IsDashboard, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Dashboard" Foreground="White" FontSize="30" FontWeight="SemiBold" />
+                    <TextBlock Text="Vice-inspired task and clipping utility for Windows." Foreground="#CCD0D4" Margin="0,8,0,24"/>
+                    <UniformGrid Columns="3">
+                        <Border Background="#1B2026" Margin="6" Padding="12"><StackPanel><TextBlock Text="Tasks" Foreground="#FF8A00"/><TextBlock Text="{Binding Tasks.Count}" Foreground="White" FontSize="26"/></StackPanel></Border>
+                        <Border Background="#1B2026" Margin="6" Padding="12"><StackPanel><TextBlock Text="Clips" Foreground="#FF8A00"/><TextBlock Text="{Binding Clips.Count}" Foreground="White" FontSize="26"/></StackPanel></Border>
+                        <Border Background="#1B2026" Margin="6" Padding="12"><StackPanel><TextBlock Text="Recent Logs" Foreground="#FF8A00"/><TextBlock Text="{Binding Logs.Count}" Foreground="White" FontSize="26"/></StackPanel></Border>
+                    </UniformGrid>
+                </StackPanel>
+
+                <StackPanel Visibility="{Binding IsTaskManager, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Task Manager" Foreground="White" FontSize="30" FontWeight="SemiBold" />
+                    <WrapPanel Margin="0,12,0,12">
+                        <TextBox Width="200" Margin="4" Text="{Binding TaskName, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox Width="300" Margin="4" Text="{Binding TaskCommand, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox Width="250" Margin="4" Text="{Binding TaskWorkingDirectory, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Content="Add Task" Command="{Binding AddTaskCommand}" />
+                        <Button Content="Save Edits" Command="{Binding SaveTaskEditsCommand}" />
+                    </WrapPanel>
+                    <DataGrid ItemsSource="{Binding Tasks}" SelectedItem="{Binding SelectedTask}" AutoGenerateColumns="False" CanUserAddRows="False" Background="#1B2026" Foreground="White" BorderBrush="#30343A">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="160"/>
+                            <DataGridTextColumn Header="Command" Binding="{Binding Command}" Width="*"/>
+                            <DataGridTextColumn Header="Work Dir" Binding="{Binding WorkingDirectory}" Width="220"/>
+                            <DataGridTemplateColumn Header="Actions" Width="190">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="Run" Command="{Binding DataContext.RunTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                                            <Button Content="Delete" Command="{Binding DataContext.RemoveTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+
+                <StackPanel Visibility="{Binding IsClipManager, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Clip Manager" Foreground="White" FontSize="30" FontWeight="SemiBold" />
+                    <WrapPanel Margin="0,12,0,12">
+                        <Button Content="Record" Command="{Binding StartRecordingCommand}" />
+                        <Button Content="Stop" Command="{Binding StopRecordingCommand}" />
+                    </WrapPanel>
+                    <DataGrid ItemsSource="{Binding Clips}" AutoGenerateColumns="False" CanUserAddRows="False" Background="#1B2026" Foreground="White" BorderBrush="#30343A">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="File" Binding="{Binding FileName}" Width="240"/>
+                            <DataGridTextColumn Header="Created" Binding="{Binding CreatedAt}" Width="200"/>
+                            <DataGridTextColumn Header="Share URL" Binding="{Binding UploadUrl}" Width="*"/>
+                            <DataGridTemplateColumn Header="Actions" Width="220">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="Upload" Command="{Binding DataContext.UploadClipCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                                            <Button Content="Copy Link" Command="{Binding DataContext.CopyLinkCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+
+                <StackPanel Visibility="{Binding IsLogs, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Output / Logs" Foreground="White" FontSize="30" FontWeight="SemiBold" />
+                    <ListBox ItemsSource="{Binding Logs}" Background="#1B2026" Foreground="White" BorderBrush="#30343A" Margin="0,12,0,0" Height="600"/>
+                </StackPanel>
+
+                <StackPanel Visibility="{Binding IsSettings, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Settings" Foreground="White" FontSize="30" FontWeight="SemiBold" />
+                    <TextBlock Text="Cloudinary credentials" Foreground="#CCD0D4" Margin="0,6,0,16" />
+                    <TextBlock Text="Cloud Name" Foreground="White" />
+                    <TextBox Width="360" Margin="0,6,0,10" Text="{Binding Settings.CloudName, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="API Key" Foreground="White" />
+                    <TextBox Width="360" Margin="0,6,0,10" Text="{Binding Settings.ApiKey, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="API Secret" Foreground="White" />
+                    <TextBox Width="360" Margin="0,6,0,10" Text="{Binding Settings.ApiSecret, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Button Content="Save Settings" Width="180" Command="{Binding SaveSettingsCommand}" />
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Window>
