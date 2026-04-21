@@ -1,0 +1,38 @@
+name: Build and Release Brave Clipping
+
+on:
+  push:
+    branches:
+      - clipping
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore BraveClipping.sln
+
+      - name: Build project
+        run: dotnet build BraveClipping/BraveClipping.csproj -c Release -p:Platform=x64 --no-restore
+
+      - name: Publish self-contained executable
+        run: dotnet publish BraveClipping/BraveClipping.csproj -c Release -r win-x64 -p:Platform=x64 --self-contained true -o publish --no-build
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: clipping-${{ github.run_id }}-${{ github.run_attempt }}
+          name: Brave Clipping Build ${{ github.run_number }}
+          files: publish/BraveClipping.exe
