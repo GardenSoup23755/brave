@@ -25,23 +25,31 @@ jobs:
       - name: Restore
         run: dotnet restore BraveClipping.sln
 
-      - name: Build
+      - name: Build (x64)
         run: dotnet build BraveClipping/BraveClipping.csproj -c Release --no-restore -p:Platform=x64
 
-      - name: Publish
+      - name: Publish (self-contained win-x64)
         run: dotnet publish BraveClipping/BraveClipping.csproj -c Release -r win-x64 --self-contained true -p:Platform=x64 -o publish
 
-      - name: Verify EXE
+      - name: Verify EXE exists
         shell: pwsh
         run: |
           if (!(Test-Path "publish/BraveClipping.exe")) {
-            throw "EXE not found"
+            throw "EXE not found!"
           }
 
-      - name: Create Release
+      # ✅ Upload artifact (ALWAYS works)
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BraveClipping
+          path: publish
+
+      # ✅ Create release (fixed)
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
           name: Brave Clipping v${{ github.run_number }}
           generate_release_notes: true
-          files: publish/BraveClipping.exe
+          files: publish/**
