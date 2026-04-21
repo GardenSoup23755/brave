@@ -1,3 +1,4 @@
+using System.IO;
 namespace BraveClipping.Models;
 
 public class ClipItem
